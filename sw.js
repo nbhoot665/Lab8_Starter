@@ -7,10 +7,10 @@ const CACHE_NAME = 'lab-8-starter';
 self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
-      // B6. TODO - Add all of the URLs from RECIPE_URLs here so that they are
+      // B6. TODO - Add all of the URLs from RECIPE here so that they are
       //            added to the cache when the ServiceWorker is installed
 
-      const RECIPE_URLS = [
+      const RECI = [
         'https://adarshz49.github.io/Lab8-Starter/recipes/1_50-thanksgiving-side-dishes.json',
         'https://adarshz49.github.io/Lab8-Starter/recipes/2_roasting-turkey-breast-with-stuffing.json',
         'https://adarshz49.github.io/Lab8-Starter/recipes/3_moms-cornbread-stuffing.json',
@@ -19,7 +19,7 @@ self.addEventListener('install', function (event) {
         'https://adarshz49.github.io/Lab8-Starter/recipes/6_one-pot-thanksgiving-dinner.json'
       ];
       
-      const STATIC_ASSETS = [
+      const STAT = [
         '/',               
         '/index.html',
         '/assets/scripts/main.js',
@@ -32,18 +32,24 @@ self.addEventListener('install', function (event) {
         '/assets/images/icons/icon-512x512.png'
       ];
       
-      const PRECACHE = [...STATIC_ASSETS, ...RECIPE_URLS]
-      return cache.addAll([]);
+      const PRECACHE = [...STAT, ...RECI]
+     
     })
   );
+
+  self.addEventListener('activate', function (event) {
+    event.waitUntil(
+      caches.open(CACHE_NAME)
+        .then(cache => cache.addAll(PRECACHE))
+        .then(() => self.skipWaiting()) 
+    );
+  
+  });
 });
 
 // Activates the service worker
-self.addEventListener('activate', function (event) {
-  event.waitUntil(self.clients.claim());
-});
 
-// Intercept fetch requests and cache them
+
 self.addEventListener('fetch', function (event) {
 
   event.respondWith(
