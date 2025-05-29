@@ -9,6 +9,30 @@ self.addEventListener('install', function (event) {
     caches.open(CACHE_NAME).then(function (cache) {
       // B6. TODO - Add all of the URLs from RECIPE_URLs here so that they are
       //            added to the cache when the ServiceWorker is installed
+
+      const RECIPE_URLS = [
+        'https://adarshz49.github.io/Lab8-Starter/recipes/1_50-thanksgiving-side-dishes.json',
+        'https://adarshz49.github.io/Lab8-Starter/recipes/2_roasting-turkey-breast-with-stuffing.json',
+        'https://adarshz49.github.io/Lab8-Starter/recipes/3_moms-cornbread-stuffing.json',
+        'https://adarshz49.github.io/Lab8-Starter/recipes/4_50-indulgent-thanksgiving-side-dishes-for-any-holiday-gathering.json',
+        'https://adarshz49.github.io/Lab8-Starter/recipes/5_healthy-thanksgiving-recipe-crockpot-turkey-breast.json',
+        'https://adarshz49.github.io/Lab8-Starter/recipes/6_one-pot-thanksgiving-dinner.json'
+      ];
+      
+      const STATIC_ASSETS = [
+        '/',               
+        '/index.html',
+        '/assets/scripts/main.js',
+        '/assets/RecipeCard.js',
+        '/assets/styles/main.css',   
+        '/manifest.json',
+        '/assets/images/icons/icon-192x192.png',
+        '/assets/images/icons/icon-256x256.png',
+        '/assets/images/icons/icon-384x384.png',
+        '/assets/images/icons/icon-512x512.png'
+      ];
+      
+      const PRECACHE = [...STATIC_ASSETS, ...RECIPE_URLS]
       return cache.addAll([]);
     })
   );
@@ -21,6 +45,25 @@ self.addEventListener('activate', function (event) {
 
 // Intercept fetch requests and cache them
 self.addEventListener('fetch', function (event) {
+
+  event.respondWith(
+    caches.open(CACHE_NAME).then(async (cache) => {
+
+      const cachedResponse = await cache.match(event.request);
+      if (cachedResponse) {
+        return cachedResponse;       
+      }
+
+      try {
+        const networkResponse = await fetch(event.request);
+        cache.put(event.request, networkResponse.clone()); // store a copy
+        return networkResponse;
+      } catch (err) {
+        
+        console.error('Network request failed and no cache:', err);
+        throw err;
+      }
+    }))
   // We added some known URLs to the cache above, but tracking down every
   // subsequent network request URL and adding it manually would be very taxing.
   // We will be adding all of the resources not specified in the intiial cache
@@ -34,6 +77,8 @@ self.addEventListener('fetch', function (event) {
   /*******************************/
   // B7. TODO - Respond to the event by opening the cache using the name we gave
   //            above (CACHE_NAME)
+  
+
   // B8. TODO - If the request is in the cache, return with the cached version.
   //            Otherwise fetch the resource, add it to the cache, and return
   //            network response.
